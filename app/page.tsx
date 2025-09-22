@@ -11,6 +11,7 @@ import Hero from "./components/hero"
 import axios from "axios"
 import {Toaster} from 'react-hot-toast'
 import Loader from "./components/loader"
+import { ArrowBigUp } from "lucide-react"
 interface MenuItem {
   id: string
   name: string
@@ -131,11 +132,11 @@ export default function Home() {
 
       {/* Menu Section */}
       <div className="container mx-auto px-4 py-16">
-        <h2 className="text-4xl font-serif font-bold text-center mb-3 text-stone-800">Our Menu</h2>
+        <a className="text-4xl font-serif font-bold text-center mb-3 text-stone-800">Our Menu</a>
         <p className="text-center text-stone-600 mb-12 text-lg">Delicious food and beverages crafted with care</p>
 
         {/* Menu Items Accordion */}
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto" id="menu">
           <Accordion type="multiple" className="w-full space-y-4">
             {categories.map((category) => (
               <AccordionItem key={category} value={category} className="border-0 shadow-sm">
@@ -254,7 +255,21 @@ export default function Home() {
           </Accordion>
         </div>
       </div>
-
+            {
+        cart.length > 0 && (
+          <div className="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50">
+            <Button
+            className="bg-amber-700 hover:bg-amber-800 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition"
+              onClick={() => {
+                const cartSection = document.getElementById("cart-section")
+                if (cartSection) {
+                  cartSection.scrollIntoView({ behavior: "smooth" })
+                }
+              }}
+              ><ArrowBigUp/> Go to Cart</Button>
+              </div>
+        )
+            }
       {/* Footer */}
       <Footer />
     </div>

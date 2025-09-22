@@ -1,6 +1,12 @@
-import { Button } from "@/components/ui/button"
+// import { Button } from "@/components/ui/button"
 
 export default function Hero() {
+  const handleScroll = () => {
+    const section = document.getElementById("menu"); // target section ID
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+  };
   return (
     <section className="relative bg-gradient-to-br from-amber-50 via-orange-50 to-stone-100 py-20 overflow-hidden">
       {/* Background Pattern */}
@@ -41,12 +47,12 @@ export default function Hero() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              className="bg-amber-700 hover:bg-amber-800 text-white px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+            <button onClick={handleScroll}
+              // size="lg"
+              className="bg-amber-700 hover:bg-amber-800 text-white px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl  "
             >
               View Our Menu
-            </Button>
+            </button>
             {/* <Button
               variant="outline"
               size="lg"

@@ -105,7 +105,7 @@ interface CartItem {
 
   return (
     <div>
-      <nav className=" text-black p-4 flex justify-between items-center sticky top-0 z-10 shadow-md">
+      <nav id="cart-section" className=" text-black p-4 flex justify-between items-center sticky top-0 z-10 shadow-md">
         <div className="flex items-center">
           <h1 className="text-2xl font-serif font-bold">Cafe Delight</h1>
         </div>
