@@ -131,12 +131,12 @@ export default function Home() {
       <Hero />
 
       {/* Menu Section */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-16"  id="menu">
         <a className="text-4xl font-serif font-bold text-center mb-3 text-stone-800">Our Menu</a>
         <p className="text-center text-stone-600 mb-12 text-lg">Delicious food and beverages crafted with care</p>
 
         {/* Menu Items Accordion */}
-        <div className="max-w-5xl mx-auto" id="menu">
+        <div className="max-w-5xl mx-auto">
           <Accordion type="multiple" className="w-full space-y-4">
             {categories.map((category) => (
               <AccordionItem key={category} value={category} className="border-0 shadow-sm">
