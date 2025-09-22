@@ -11,6 +11,8 @@ import axios from "axios"
 // import { Separator } from "@/components/ui/separator"
 import mongoose from "mongoose"
 import toast from "react-hot-toast"
+import { Loader, Loader2 } from "lucide-react"
+import Razorpay from "./razorpay"
 interface MenuItem {
   id: string
   name: string
@@ -66,8 +68,7 @@ interface CartItem {
       const [isCartOpen, setIsCartOpen] = useState(false)
       const [name, setName] = useState("")
       const [phone, setPhone] = useState("")
-    // const [quantities, setQuantities] = useState<{[key: number]: number}>({})
-
+      const [ordering, setOrdering] = useState(false)
       const calculateTotal = () => {
         return cart.reduce((total, cartItem) => {
           return total + (cartItem.item.price * cartItem.quantity)
@@ -75,6 +76,7 @@ interface CartItem {
       }
 
       const handleOrder = async ()=> {
+        setOrdering(true)
          const toSend : Order = {
           name,
           phone,
@@ -97,6 +99,7 @@ interface CartItem {
          setPhone("");
          emptyCart();
          toast.success("Order placed successfully!")
+         setOrdering(false);
       }
     
 
@@ -136,7 +139,8 @@ interface CartItem {
                 </div>
                 <div className="flex-1">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" placeholder="Enter your phone number" value={phone} onChange={(e) => setPhone(e.target.value) }/>
+                    <Input id="phone" type="number" placeholder="Enter your phone number" value={phone} onChange={(e) => setPhone(e.target.value) } 
+                    maxLength={10} className={phone.length !== 10 && phone.length !== 0 ? "border-red-500" : ""}/>
                 </div>
                 </div>
 
@@ -200,9 +204,11 @@ interface CartItem {
                         
                         </div>
                         <Button
-                        onClick={handleOrder} 
-                        className="w-full bg-amber-700 hover:bg-amber-800 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-amber-700/40 transition">
-                            Proceed to Checkout
+                        disabled={ordering || (phone.length !== 10 || name.length <= 2)}
+                        // onClick={handleOrder} 
+                        className="w-full bg-amber-700 hover:bg-amber-700 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-amber-700/40 transition">
+                            { ordering ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Razorpay amount={calculateTotal()} name={name} phone={phone} handleOrder={handleOrder}
+                              disable={ ordering || (phone.length !== 10 || name.length <= 2)} /> }
                         </Button>
                         </div>
                     </ScrollArea>

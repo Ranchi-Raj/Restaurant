@@ -15,6 +15,9 @@ import axios from "axios"
 import {toast, Toaster} from "react-hot-toast"
 import Loader from "../components/loaderAdmin"
  import Pusher from "pusher-js";
+import PaginationComp from "../components/pagination"
+import { Loader2 } from "lucide-react"
+import { format } from "path"
 
 interface MenuItem {
   id: string
@@ -50,7 +53,7 @@ interface Order {
   items: OrderedItem[]
   total: number
   status: "Pending" | "Live" | "Completed"
-  timestamp: string
+  createdAt: string
   phone : string
 }
 interface OrderAxios {
@@ -59,11 +62,27 @@ interface OrderAxios {
   items: OrderedItem[]
   total: number
   status: "Pending" | "Live" | "Completed"
-  timestamp: string
+  createdAt: string
   phone : string
 }
 
+function timeFormat(dateStr: string): string {
+  const date = new Date(dateStr);
+
+  // add 5 hours 30 minutes offset (19800000 ms)
+  const offsetDate = new Date(date.getTime() + (5 * 60 + 30) * 60 * 1000);
+
+  const day = String(offsetDate.getUTCDate()).padStart(2, "0");
+  const month = String(offsetDate.getUTCMonth() + 1).padStart(2, "0");
+
+  const hours = String(offsetDate.getUTCHours()).padStart(2, "0");
+  const minutes = String(offsetDate.getUTCMinutes()).padStart(2, "0");
+
+  return `${day}-${month} --  ${hours}:${minutes}`;
+}
+
 export default function AdminPage() {
+  const offset = 25; // Adjust the offset value as needed
   const [menuItems, setMenuItems] = useState<MenuItem[]>()
   const [orders, setOrders] = useState<Order[]>([])
   const [activeTab, setActiveTab] = useState("menu")
@@ -78,9 +97,13 @@ export default function AdminPage() {
     imageUrl: "",
     isAvailable: false
   })
+  const [photoUpload, setPhotoUpload] = useState(false)
+  const [itemisAdded, setItemisAdded] = useState(false)
   const[file,setFile] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [refresh,setRefresh] = useState(0)
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
   // To load all the menu items
   useEffect(() => {
     const fetchMenuItems = async () => {
@@ -109,9 +132,18 @@ export default function AdminPage() {
         console.error("Error fetching menu items:", error)
       }
     }
+    
+    fetchMenuItems()
+    
+  },[refresh])
+
+  // To load all order and also refresh on new order and pagination
+  useEffect(() => {
     const fetchOrders = async () => {
       try{
-        const data = await axios.get('/api/orderItem')
+        const length = await axios.get('/api/getOrderCount')
+        setTotalPages(Math.ceil(length.data / offset))
+        const data = await axios.get(`/api/orderItem?page=${page}&limit=${offset}`)
         console.log("Orders data:", data.data)
         const toSet : Order[] = []
         data.data.map((order: OrderAxios) => {
@@ -121,7 +153,7 @@ export default function AdminPage() {
             items: order.items,
             total: order.total,
             status: order.status,
-            timestamp: order.timestamp,
+            createdAt: order.createdAt,
             phone: order.phone
           }
           toSet.push(toAdd)
@@ -132,9 +164,8 @@ export default function AdminPage() {
         console.error("Error fetching orders:", e)
       }
     }
-    fetchMenuItems()
     fetchOrders()
-  },[refresh])
+  }, [page])
  
   // Pusher for real-time updates
  useEffect(() => {
@@ -163,16 +194,26 @@ export default function AdminPage() {
 
   // To add a new menu item --> working
   const addMenuItem = async () => {
-    
-    const data = await axios.post('/api/addItem', { ...newItem, imageUrl : file })
-    setMenuItems([...menuItems!, {...data.data.item, id: data.data.item._id}])
-    console.log("Data",data.data.item)
-    console.log("Adding new item:", newItem)
-    toast.success("Item added successfully!")  
+    try{
+      setItemisAdded(true)
+      const data = await axios.post('/api/addItem', { ...newItem, imageUrl : file })
+      setMenuItems([...menuItems!, {...data.data.item, id: data.data.item._id}])
+      console.log("Data",data.data.item)
+      console.log("Adding new item:", newItem)
+      toast.success("Item added successfully!")  
+    }
+    catch(e){
+      console.error("Error adding item:", e)
+      toast.error("Failed to add item")
+    }
+    finally{
+      setItemisAdded(false)
+    }
   }
 
   const handleUpload = async (e : React.FormEvent, file : File | null) => {
   e.preventDefault()
+  setPhotoUpload(true)
   if (!file) return
 
   const formData = new FormData()
@@ -190,8 +231,12 @@ export default function AdminPage() {
     console.log("Image url",response.data.image)
     setFile(response.data.image)
     toast.success("Image uploaded successfully!")
+
   } catch (error) {
     console.error("Error uploading file:", error)
+  }
+  finally{
+    setPhotoUpload(false)
   }
 }
 
@@ -281,7 +326,7 @@ export default function AdminPage() {
               </CardHeader>
               <CardContent>
                 <div className="mb-6">
-                  <AddItemDialog onAddItem={addMenuItem} newItem={newItem} setNewItem={setNewItem} handleUpload={handleUpload} />
+                  <AddItemDialog onAddItem={addMenuItem} newItem={newItem} setNewItem={setNewItem} handleUpload={handleUpload} photoUpload={photoUpload} itemisAdded={itemisAdded}/>
                 </div>
 
                 <div className="rounded-lg overflow-hidden border border-slate-700/50">
@@ -387,6 +432,7 @@ export default function AdminPage() {
                     <TableHeader>
                       <TableRow className="border-b border-slate-700 hover:bg-slate-800/50">
                         <TableHead className="text-blue-300">Order ID</TableHead>
+                        <TableHead className="text-blue-300">Date&Time</TableHead>
                         <TableHead className="text-blue-300">Customer</TableHead>
                         <TableHead className="text-blue-300">Items</TableHead>
                         <TableHead className="text-blue-300">Total</TableHead>
@@ -400,6 +446,7 @@ export default function AdminPage() {
                       {filteredOrders.length === 0 ?  <TableRow><TableCell colSpan={7} className="text-center text-slate-300">No orders found</TableCell></TableRow> :   filteredOrders.map((order) => (
                         <TableRow key={order.id} className="border-b border-slate-700/30 hover:bg-slate-700/30 transition-colors">
                           <TableCell className="font-medium text-gray-300">{order.id.slice(-6)}</TableCell>
+                          <TableCell className="text-gray-300">{timeFormat(order.createdAt)}</TableCell>
                           <TableCell className="text-gray-300">{order.customerName}</TableCell>
                           <TableCell className="text-gray-300">
                             <div className="max-w-xs truncate">
@@ -438,8 +485,14 @@ export default function AdminPage() {
                 </div>
               </CardContent>
             </Card>
+            <PaginationComp
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
           </TabsContent>
         </Tabs>
+         
       </div>
     </div>
   )
@@ -449,9 +502,11 @@ interface AddItemDialogProps {
   newItem: MenuItem
   setNewItem: React.Dispatch<React.SetStateAction<MenuItem>>
   handleUpload: (e: React.FormEvent, file: File | null) => void
+  photoUpload: boolean
+  itemisAdded: boolean
 }
 // Add Item Dialog Component
-function AddItemDialog({ onAddItem, newItem, setNewItem, handleUpload }: AddItemDialogProps) {
+function AddItemDialog({ onAddItem, newItem, setNewItem, handleUpload, photoUpload, itemisAdded }: AddItemDialogProps) {
   const [open, setOpen] = useState(false)
 
   const handleSubmit = (e : React.FormEvent) => {
@@ -564,15 +619,18 @@ function AddItemDialog({ onAddItem, newItem, setNewItem, handleUpload }: AddItem
                 // value={file ? file.name : null} 
                 onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
               />
-            <Button onClick={(e) => handleUpload(e,file)}>Upload</Button>
+            <Button onClick={(e) => handleUpload(e,file)} disabled={photoUpload}>
+              {photoUpload ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Upload"}
+            </Button>
             </div>
           </div>
           <DialogFooter className="flex justify-center w-full">
             <Button 
               type="submit"
+              disabled={itemisAdded}
               className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500"
             >
-              Save Item
+              {itemisAdded ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save"}
             </Button>
           </DialogFooter>
         </form>

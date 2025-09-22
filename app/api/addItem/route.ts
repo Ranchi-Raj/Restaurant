@@ -3,6 +3,7 @@ import dbConnect from "@/lib/mongoose";
 import Item from "@/modals/item";
 import { ObjectId } from "mongodb";
 
+// Add a new item
 export async function POST(request: Request) {
     try {
         await dbConnect();
@@ -20,6 +21,7 @@ export async function POST(request: Request) {
     }
 }
 
+// Get all items
 export async function GET() {
     try {
         await dbConnect();
@@ -31,6 +33,7 @@ export async function GET() {
     }
 }
 
+// Delete an item by ID
 export async function DELETE(request: Request) {
     try {
         await dbConnect();
