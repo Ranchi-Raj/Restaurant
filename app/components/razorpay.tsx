@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import axios from "axios";
-import { NextResponse } from "next/server";
+// import { NextResponse } from "next/server";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
@@ -31,7 +31,7 @@ export default function Razorpay({amount, name, phone, handleOrder, disable} : {
       const { order } = data;
       // Step 2: Configure Razorpay Checkout
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID  , // Replace with your Razorpay key_id
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "", // Ensure key is always a string
         amount: order.amount, // Amount in subunits (e.g., 50000 paise = ₹500.00)
         currency: order.currency,
         name: "Cafe Delight",
