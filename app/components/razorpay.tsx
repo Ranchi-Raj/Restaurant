@@ -4,7 +4,7 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
-export default function Razorpay({amount, name, phone, handleOrder, disable} : {amount: number | undefined, name: string | undefined, phone: string | undefined, handleOrder: () => void, disable: boolean}) {
+export default function Razorpay({amount, name, phone, handleOrder, disable, setOrdering} : {amount: number | undefined, name: string | undefined, phone: string | undefined, handleOrder: () => void, disable: boolean, setOrdering: React.Dispatch<React.SetStateAction<boolean>>}) {
 
     useEffect(() => {
     // Dynamically load the Razorpay script
@@ -21,6 +21,7 @@ export default function Razorpay({amount, name, phone, handleOrder, disable} : {
 
   const handlePayment = async () => {
     try {
+      setOrdering(true);
       // Step 1: Create an order from the backend
       const { data } = await axios.post(`/api/razorpay/create-order`, {
         amount: amount,
@@ -73,7 +74,7 @@ export default function Razorpay({amount, name, phone, handleOrder, disable} : {
   return (
     <div>
       <Button onClick={handlePayment}
-         disabled={disable}
+      disabled={disable}
       className="w-full bg-amber-700 hover:bg-amber-700 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-amber-700/40 transition">Pay</Button>
     </div>
   );

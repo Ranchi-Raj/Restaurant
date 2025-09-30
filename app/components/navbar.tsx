@@ -81,7 +81,7 @@ interface CartItem {
       }
 
   const handleOrder = async ()=> {
-    setOrdering(true)
+    // setOrdering(true)
 
     const toSend : Order = {
     name,
@@ -107,6 +107,7 @@ interface CartItem {
     setIsCartOpen(false);
     setName("");
     setPhone("");
+    setEmail("");
     emptyCart();
     toast.success("Order placed successfully!")
     setOrdering(false);
@@ -227,10 +228,10 @@ interface CartItem {
                         </div>
                         <Button
                         disabled={ordering || (phone.length !== 10 || name.length <= 2)}
-                        onClick={handleOrder} 
+                        // onClick={handleOrder} 
                         className="w-full bg-amber-700 hover:bg-amber-700 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-amber-700/40 transition">
-                            {/* { ordering ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Razorpay amount={calculateTotal()} name={name} phone={phone} handleOrder={handleOrder}
-                              disable={ ordering || (phone.length !== 10 || name.length <= 2)} /> } */}
+                            { ordering ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Razorpay setOrdering = {setOrdering} amount={calculateTotal()} name={name} phone={phone} handleOrder={handleOrder}
+                              disable={ ordering || (phone.length !== 10 || name.length <= 2)} /> }
                         </Button>
                         </div>
                     </ScrollArea>
