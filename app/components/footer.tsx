@@ -4,12 +4,12 @@ export default function Footer() {
   return (
     <footer className="bg-stone-800 text-stone-200">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <span className="text-2xl">☕</span>
-              <h3 className="text-xl font-serif font-bold text-white">Cafe Delight</h3>
+              <h3 className="text-xl font-serif font-bold text-white">Kanha Restaurant</h3>
             </div>
             <p className="text-stone-400 leading-relaxed">
               Serving the finest coffee and delicious meals in a warm, welcoming atmosphere since 2020.
@@ -34,8 +34,8 @@ export default function Footer() {
               <div className="flex items-start space-x-3">
                 <MapPin className="h-5 w-5 text-amber-400 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-stone-300">123 Coffee Street</p>
-                  <p className="text-stone-300">Downtown, City 12345</p>
+                  <p className="text-stone-300">Inside IIT Bhuabaneswar,</p>
+                  <p className="text-stone-300">At new Shopping Complex</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
@@ -71,7 +71,7 @@ export default function Footer() {
           </div>
 
           {/* Quick Links - Uncommented and made responsive */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <h4 className="text-lg font-semibold text-white">Quick Links</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <a href="#menu" className="block text-stone-300 hover:text-amber-400 transition-colors">
@@ -93,13 +93,13 @@ export default function Footer() {
                 Careers
               </a>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Bottom Bar */}
         <div className="border-t border-stone-700 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-stone-400 text-sm">© 2024 Cafe Delight. All rights reserved.</p>
+            <p className="text-stone-400 text-sm">© 2025 Kanha Restaurant. All rights reserved.</p>
             <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm">
               <a href="#privacy" className="text-stone-400 hover:text-amber-400 transition-colors">
                 Privacy Policy

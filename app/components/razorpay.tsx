@@ -34,7 +34,7 @@ export default function Razorpay({amount, name, phone, handleOrder, disable} : {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "", // Ensure key is always a string
         amount: order.amount, // Amount in subunits (e.g., 50000 paise = ₹500.00)
         currency: order.currency,
-        name: "Cafe Delight",
+        name: "Kanha Restaurant",
         description: "Test Transaction",
         // image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQM8zKfR3BZqyxwFGuqTOH1wPe1JGyeHvdcHw&s", // Optional logo
         order_id: order.id, // Pass the `order_id` obtained from backend

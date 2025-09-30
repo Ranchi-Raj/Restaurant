@@ -13,6 +13,8 @@ import mongoose from "mongoose"
 import toast from "react-hot-toast"
 import { Loader, Loader2 } from "lucide-react"
 import Razorpay from "./razorpay"
+import CentralModal from "./bookedModal"
+
 interface MenuItem {
   id: string
   name: string
@@ -69,45 +71,61 @@ interface CartItem {
       const [name, setName] = useState("")
       const [phone, setPhone] = useState("")
       const [ordering, setOrdering] = useState(false)
+      const [email, setEmail] = useState("")
+      const [isOpen, setIsOpen] = useState(false)
+      const [orderId, setOrderId] = useState("")
       const calculateTotal = () => {
         return cart.reduce((total, cartItem) => {
           return total + (cartItem.item.price * cartItem.quantity)
         }, 0)
       }
 
-      const handleOrder = async ()=> {
-        setOrdering(true)
-         const toSend : Order = {
-          name,
-          phone,
-          items: cart.map(cartItem => ({
-            itemId: new mongoose.Types.ObjectId(cartItem.item.id),
-            name: cartItem.item.name,
-            quantity: cartItem.quantity,
-            price: cartItem.item.price
-          })),
-          total: calculateTotal(),
-          status: "Pending",
-          createdAt: new Date(),
-          updatedAt: new Date()
-         }
+  const handleOrder = async ()=> {
+    setOrdering(true)
 
-         const data = await axios.post('/api/orderItem', toSend)
-         console.log("Order placed:", data)
-         setIsCartOpen(false);
-         setName("");
-         setPhone("");
-         emptyCart();
-         toast.success("Order placed successfully!")
-         setOrdering(false);
-      }
+    const toSend : Order = {
+    name,
+    phone,
+    items: cart.map(cartItem => ({
+      itemId: new mongoose.Types.ObjectId(cartItem.item.id),
+      name: cartItem.item.name,
+      quantity: cartItem.quantity,
+      price: cartItem.item.price
+    })),
+    total: calculateTotal(),
+    status: "Pending",
+    createdAt: new Date(),
+    updatedAt: new Date()
+    }
+
+    const data = await axios.post('/api/orderItem', toSend)
+    console.log("Order placed:", data) // data.data.item._id hmko chahiye
+    setOrderId(data.data.item._id)
+    // Show modal
+    setIsOpen(true)
+    // Clear cart and form
+    setIsCartOpen(false);
+    setName("");
+    setPhone("");
+    emptyCart();
+    toast.success("Order placed successfully!")
+    setOrdering(false);
+  }
     
 
   return (
     <div>
+      {
+        isOpen && <CentralModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title="Order Confirmation"
+        content={"localhost:3000/order/" + orderId}
+      />
+      }
       <nav id="cart-section" className=" text-black p-4 flex justify-between items-center sticky top-0 z-10 shadow-md">
         <div className="flex items-center">
-          <h1 className="text-2xl font-serif font-bold">Cafe Delight</h1>
+          <h1 className="text-2xl font-serif font-bold">Kanha Restaurant</h1>
         </div>
        <Dialog open={isCartOpen} onOpenChange={setIsCartOpen}>
         <DialogTrigger asChild>
@@ -141,6 +159,10 @@ interface CartItem {
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input id="phone" type="number" placeholder="Enter your phone number" value={phone} onChange={(e) => setPhone(e.target.value) } 
                     maxLength={10} className={phone.length !== 10 && phone.length !== 0 ? "border-red-500" : ""}/>
+                </div>
+                <div className="flex-1">
+                    <Label htmlFor="email">E-mail</Label>
+                    <Input id="email" type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value) } />
                 </div>
                 </div>
 
@@ -205,10 +227,10 @@ interface CartItem {
                         </div>
                         <Button
                         disabled={ordering || (phone.length !== 10 || name.length <= 2)}
-                        // onClick={handleOrder} 
+                        onClick={handleOrder} 
                         className="w-full bg-amber-700 hover:bg-amber-700 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-amber-700/40 transition">
-                            { ordering ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Razorpay amount={calculateTotal()} name={name} phone={phone} handleOrder={handleOrder}
-                              disable={ ordering || (phone.length !== 10 || name.length <= 2)} /> }
+                            {/* { ordering ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Razorpay amount={calculateTotal()} name={name} phone={phone} handleOrder={handleOrder}
+                              disable={ ordering || (phone.length !== 10 || name.length <= 2)} /> } */}
                         </Button>
                         </div>
                     </ScrollArea>

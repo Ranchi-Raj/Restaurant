@@ -21,7 +21,7 @@ export default function Hero() {
           {/* Main Heading */}
           <h1 className="text-5xl md:text-6xl font-serif font-bold text-stone-800 mb-6 leading-tight">
             Welcome to
-            <span className="block text-amber-700 mt-2">Cafe Delight</span>
+            <span className="block text-amber-700 mt-2">Kanha Restaurant</span>
           </h1>
 
           {/* Subtitle */}

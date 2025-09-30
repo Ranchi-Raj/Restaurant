@@ -17,8 +17,8 @@ import Loader from "../components/loaderAdmin"
  import Pusher from "pusher-js";
 import PaginationComp from "../components/pagination"
 import { Loader2 } from "lucide-react"
-import { format } from "path"
 
+// Interfaces
 interface MenuItem {
   id: string
   name: string
@@ -102,8 +102,9 @@ export default function AdminPage() {
   const[file,setFile] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [refresh,setRefresh] = useState(0)
-  const [page, setPage] = useState(0)
+  const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [timeLimit, setTimeLimit] = useState("7")
   // To load all the menu items
   useEffect(() => {
     const fetchMenuItems = async () => {
@@ -165,7 +166,7 @@ export default function AdminPage() {
       }
     }
     fetchOrders()
-  }, [page])
+  }, [page,refresh])
  
   // Pusher for real-time updates
  useEffect(() => {
@@ -182,7 +183,7 @@ export default function AdminPage() {
     channel.bind("my-event", function () {
       toast.success("New order placed!")
       speak()
-      setRefresh((refresh + 1)%2)
+      setRefresh((refresh + 1)%10)
     });
 
     return () => {
@@ -284,6 +285,64 @@ export default function AdminPage() {
     }
   };
 
+  
+
+  // Function to convert data to CSV string
+const convertToCSV = (data : Order[]) => {
+  // const header = Object.keys(data[0]).join(',');
+  const req = ["name", "items", "total", "status", "createdAt", "phone"]
+  const rows = data.map((row : Order) => {
+    const values = req.map(field => {
+      if (field === "items") {
+        const itemsValue = row[field as keyof Order];
+        if (Array.isArray(itemsValue)) {
+          return itemsValue.map((item : { name: string; quantity: number }) => `${item.name} x ${item.quantity}`).join(';');
+        }
+        return "";
+      } else {
+        return row[field as keyof Order];
+      }
+    }).join(',');
+    return values;
+  });
+  return `${req}\n${rows.join('\n')}`;
+};
+
+// Function to download CSV
+const downloadCSV = (data : Order[], filename = 'export.csv') => {
+  const csvString = convertToCSV(data);
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+  const handleExport = async () =>{
+
+    const data = await axios.get(`/api/getOrderbyDate?duration=${timeLimit}`);
+
+    // Convert to CSV and download
+    downloadCSV(data.data);
+    toast.success("CSV exported successfully!")
+  }
+
+  // const handleClearHistory = async () => {
+  //   try{
+  //     await axios.post(`/api/clearOrders`,{duration : timeLimit});
+  //     setRefresh((refresh + 1)%10)
+  //     toast.success("History cleared successfully")
+  //   }
+  //   catch(e){
+  //     console.log("Error clearing history",e)
+  //     toast.error("Failed to clear history")
+  //   }
+  // }
+
     if(loading){
       return <Loader/>
     }
@@ -293,7 +352,7 @@ export default function AdminPage() {
       <Toaster/>
       <nav className="bg-slate-800/70 backdrop-blur-md border-b border-slate-700/50 px-6 py-4 shadow-xl">
         <div className="flex justify-center items-center">
-          <h1 className="text-2xl font-semibold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Cafe Delight Admin</h1>
+          <h1 className="text-2xl font-semibold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Kanha Admin Panel </h1>
           {/* <Button variant="outline">Logout</Button> */}
         </div>
       </nav>
@@ -396,6 +455,7 @@ export default function AdminPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                <div className="flex justify-between">
                 <div className="flex flex-wrap gap-2 mb-6">
                   <Button 
                     variant={orderFilter === "all" ? "default" : "outline"}
@@ -426,12 +486,31 @@ export default function AdminPage() {
                     Completed
                   </Button>
                 </div>
-
+                
+                <div className="flex flex-wrap gap-2 mb-6">
+                  
+                  {/* <Button className="bg-rose-600 hover:bg-rose-500" onClick={handleClearHistory}>Clear History</Button>  */}
+                  <Button className="bg-green-600 hover:bg-green-500" onClick={handleExport}>Export CSV</Button>
+                  
+                  <Select value={timeLimit} onValueChange={setTimeLimit}>
+                    <SelectTrigger className="w-[120px] text-white">
+                      <SelectValue placeholder="Select Time Range" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
+                      <SelectItem value="7">Last 7 Days</SelectItem>
+                      <SelectItem value="30">Last 30 Days</SelectItem>
+                      <SelectItem value="90">Last 90 Days</SelectItem>
+                      <SelectItem value="180">Last 180 Days</SelectItem>
+                      <SelectItem value="365">Last 365 Days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                </div>
                 <div className="rounded-lg overflow-hidden border border-slate-700/50">
                   <Table>
                     <TableHeader>
                       <TableRow className="border-b border-slate-700 hover:bg-slate-800/50">
-                        <TableHead className="text-blue-300">Order ID</TableHead>
+                        {/* <TableHead className="text-blue-300">Order ID</TableHead> */}
                         <TableHead className="text-blue-300">Date&Time</TableHead>
                         <TableHead className="text-blue-300">Customer</TableHead>
                         <TableHead className="text-blue-300">Items</TableHead>
@@ -445,7 +524,7 @@ export default function AdminPage() {
 
                       {filteredOrders.length === 0 ?  <TableRow><TableCell colSpan={7} className="text-center text-slate-300">No orders found</TableCell></TableRow> :   filteredOrders.map((order) => (
                         <TableRow key={order.id} className="border-b border-slate-700/30 hover:bg-slate-700/30 transition-colors">
-                          <TableCell className="font-medium text-gray-300">{order.id.slice(-6)}</TableCell>
+                           {/* <TableCell className="font-medium text-gray-300">{order.id.slice(-6)}</TableCell> */}
                           <TableCell className="text-gray-300">{timeFormat(order.createdAt)}</TableCell>
                           <TableCell className="text-gray-300">{order.customerName}</TableCell>
                           <TableCell className="text-gray-300">

@@ -31,7 +31,7 @@ export async function GET(req: Request) {
         await dbConnect();
         const items = await Item.find()
         .sort({ createdAt: -1 })
-        .skip(page * limit)
+        .skip((page -1 ) * limit)
         .limit(limit);
         return NextResponse.json(items, { status: 200 });
     } catch (error) {
